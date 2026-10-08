@@ -1,6 +1,7 @@
 # NotITG Linux Compatibility Fix (`winmm.dll` Proxy)
 
 This fixes both transparent AFTs and playfield juttering. 
+Created with heavy help from Gemini.
 ---
 
 ## Table of Contents
