@@ -1,10 +1,6 @@
 # NotITG Linux Compatibility Fix (`winmm.dll` Proxy)
 
-A lightweight 32-bit proxy DLL that resolves two long-standing, game-breaking issues when running **NotITG** (closed-source StepMania 3.95 / OpenITG derivative) on **Linux** via **Wine** or **Proton**:
-
-1. **High Refresh Rate Judder** on high-refresh monitors (144Hz, 240Hz, 360Hz+).
-2. **Opaque Black Box Backgrounds (`#000000`)** on **Transparent ActorFrameTextures (AFTs)**.
-
+This fixes both transparent AFTs and playfield juttering. 
 ---
 
 ## Table of Contents
