@@ -2,14 +2,13 @@
 
 A lightweight 32-bit proxy DLL that resolves two long-standing, game-breaking issues when running **NotITG** (closed-source StepMania 3.95 / OpenITG derivative) on **Linux** via **Wine** or **Proton**:
 
-1. **High Refresh Rate Judder / 60–120Hz Micro-stuttering** on high-refresh monitors (144Hz, 240Hz, 360Hz+).
+1. **High Refresh Rate Judder** on high-refresh monitors (144Hz, 240Hz, 360Hz+).
 2. **Opaque Black Box Backgrounds (`#000000`)** on **Transparent ActorFrameTextures (AFTs)**.
 
 ---
 
 ## Table of Contents
 - [How to Use (Quick Start)](#how-to-use-quick-start)
-  - [Prerequisites](#prerequisites)
   - [Installation Steps](#installation-steps)
   - [Compiling from Source](#compiling-from-source)
 - [How It Works & Root Cause Deep-Dive](#how-it-works--root-cause-deep-dive)
@@ -25,10 +24,6 @@ A lightweight 32-bit proxy DLL that resolves two long-standing, game-breaking is
 ---
 
 ## How to Use (Quick Start)
-
-### Prerequisites
-- NotITG (e.g., NotITG v4.9.1) installed and running under **Wine** or **Steam Proton** (Proton 6.3 is recommended for NotITG startup compatibility).
-- A working Wine or Proton prefix.
 
 ### Installation Steps
 
@@ -57,16 +52,6 @@ A lightweight 32-bit proxy DLL that resolves two long-standing, game-breaking is
      wine Program/NotITG-v4.9.1.exe
      ```
      *(Or open `winecfg` -> **Libraries** tab -> type `winmm` -> Add -> Set to **Native then Builtin**)*.
-
-3. **Check Audio Driver in StepMania.ini**:
-   Make sure `Data/StepMania.ini` has:
-   ```ini
-   SoundDrivers=WaveOut
-   ```
-   *(Do NOT use Null driver anymore—WaveOut will now be 100% smooth!)*
-
-4. **Launch NotITG and Play**:
-   Playfields will now scroll with perfect 360Hz+ frame-rate fluidity, and modfiles utilizing transparent AFTs (such as *Party Starter* or *BRING IT*) will render their transparent cutouts properly.
 
 ---
 
@@ -142,8 +127,6 @@ Instead of blindly returning Wine's stepped audio counter:
    - If the smooth clock is slightly lagging behind real audio playback ($\text{error} > 0$), it accelerates by up to $+2\%$.
    - If the smooth clock is slightly ahead ($\text{error} < 0$), it decelerates by up to $-2\%$.
 4. It strictly enforces monotonic advancement (the clock never goes backward or freezes).
-
-**Result**: Arrows scroll across the screen with 100% continuous, mathematical smoothness at any refresh rate (360Hz, 500Hz, etc.) without drifting out of sync with the music.
 
 ---
 
