@@ -1,7 +1,6 @@
 # NotITG Linux Compatibility Fix (`winmm.dll` Proxy)
 
-This fixes both transparent AFTs and playfield juttering. 
-Created with heavy help from Gemini.
+This fixes both transparent AFTs and playfield juttering (wine acc).
 ---
 
 ## Table of Contents
@@ -35,9 +34,9 @@ Created with heavy help from Gemini.
    ```
 
 2. **Set the DLL Override in Wine / Proton**:
-   Because `winmm.dll` is a core Windows system library, Wine must be instructed to prefer the local version (*native*) over the built-in Wine version:
+   Because `winmm.dll` is a core Windows system library, Wine must be instructed to prefer the local version over the built-in Wine version:
    
-   - **If launching via Steam (Recommended)**:
+   - **If launching via Steam**:
      Right-click **NotITG** in your Steam Library -> **Properties** -> **General** -> **Launch Options**, and add:
      ```bash
      WINEDLLOVERRIDES="winmm=n,b" %command%
@@ -70,7 +69,7 @@ sudo apt install gcc-mingw-w64-i686
 ```bash
 make
 ```
-This produces a 32-bit `winmm.dll` ready for installation.
+This produces a 32-bit `winmm.dll`.
 
 ---
 
@@ -106,7 +105,7 @@ Because NotITG is closed-source, these fixes are injected entirely at runtime th
 In StepMania 3.95 and OpenITG (the codebase NotITG is branched from), visual arrow positioning, playfield scrolling, and input polling are strictly tied to the audio clock. In every frame of `RageDisplay`, the engine calls `RageSoundManager`, which queries the audio device position via the Windows Multimedia API (`waveOutGetPosition`).
 
 Under native Windows, audio drivers continuously report sub-millisecond audio position updates. However, on Linux under Wine/Proton:
-- Wine's audio backends (PulseAudio / PipeWire / ALSA) update `waveOutGetPosition` in coarse, discrete buffer blocks (typically every 10–20 ms, equivalent to ~50–100Hz).
+- Wine's audio backends (PulseAudio / PipeWire / ALSA) update `waveOutGetPosition` in coarse, discrete buffer blocks.
 - On a high-refresh-rate monitor, the game engine renders several display frames **during a single audio quantum**.
 - To the game engine, audio playback appears completely frozen for 3–5 consecutive video frames, followed by a sudden jump forward when the next audio buffer slice completes.
 
@@ -115,7 +114,7 @@ Under native Windows, audio drivers continuously report sub-millisecond audio po
 #### The Fix: Continuous Phase-Locked Loop (PLL) Audio Clock
 The proxy DLL intercepts `waveOutOpen`, `waveOutWrite`, `waveOutPause`, `waveOutRestart`, `waveOutReset`, and `waveOutGetPosition`.
 
-Instead of blindly returning Wine's stepped audio counter:
+Instead of just returning Wine's stepped audio counter:
 1. It reads high-precision hardware timestamps via `QueryPerformanceCounter` (sub-microsecond resolution).
 2. It interpolates playback continuously between audio buffer deliveries.
 3. It implements a **Phase-Locked Loop (PLL) proportional servo loop**:
@@ -130,7 +129,7 @@ Instead of blindly returning Wine's stepped audio counter:
 ### Issue 2: Broken Transparent ActorFrameTextures (Black Boxes)
 
 #### The Problem
-NotITG introduced custom Lua methods for ActorFrameTextures (AFTs), including `EnableAlphaBuffer(true)` and `clearbuffer,1`. Song writers frequently use transparent AFTs to isolate actors (e.g. player judgment, combo, or arrow notes) against a transparent cutout background.
+NotITG introduced custom Lua methods for ActorFrameTextures (AFTs), including `EnableAlphaBuffer(true)` and `clearbuffer,1`.
 
 Reverse engineering `NotITG-v4.9.1.exe` revealed how screen-capturing AFTs function:
 1. In `RageDisplay_OGL::CreateRenderTarget`, NotITG creates a Win32 render target (`RenderTarget_Win32`).
@@ -167,7 +166,7 @@ During process initialization (`DLL_PROCESS_ATTACH`), `winmm.dll`:
    - `glClearColor(0, 0, 0, 0)` clears the backbuffer alpha to `0.0`.
    - `glCopyTexSubImage2D` reads the real alpha channel (`0.0`) from the backbuffer instead of substituting `1.0`.
 
-**Result**: Transparent AFTs render with complete alpha transparency, perfectly matching the appearance on native Windows.
+**Result**: Transparent AFTs render with complete alpha transparency, matching the appearance on native Windows.
 
 ---
 
@@ -193,3 +192,6 @@ The proxy automatically generates a log file named `winmm_smooth.log` in the `Pr
 ```
 
 ---
+
+### License & Credits
+Built with heavy help from Gemini (Antigravity).
